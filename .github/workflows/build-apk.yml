@@ -1,0 +1,56 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Capacitor project
+        run: |
+          mkdir -p www
+          cp -r index.html assets icons manifest.webmanifest apple-touch-icon.png www/
+          npm init -y
+          npm install @capacitor/core@6 @capacitor/android@6
+          npm install -D @capacitor/cli@6
+          npx cap init "SS 进销存管理系统" "com.ss.inventory" --web-dir www
+          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('capacitor.config.json','utf8'));p.server={url:'https://liuhong93.github.io/runyueya-inventory-web/',cleartext:false};fs.writeFileSync('capacitor.config.json',JSON.stringify(p,null,2));"
+
+      - name: Add Android platform
+        run: npx cap add android
+
+      - name: Build APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ss-inventory-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.0
+          name: SS 进销存 v1.0.0
+          body: |
+            安卓 APK 安装包（SS 进销存管理系统）
+            安装后打开即进入系统登录页。
+          files: android/app/build/outputs/apk/debug/app-debug.apk
