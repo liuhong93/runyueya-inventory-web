@@ -1,0 +1,1 @@
+import{s as e}from"./index-D3AlWYEF.js";async function i(t,r,s,n){const{data:{user:a}}=await e.auth.getUser();a&&await e.from("change_logs").insert({table_name:t,record_id:r,changed_by:a.id,before:s,after:n})}export{i as l};
