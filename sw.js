@@ -1,4 +1,4 @@
-const CACHE = "ss-inventory-v1";
+const CACHE = "ss-inventory-v2";
 
 self.addEventListener("install", () => {
   self.skipWaiting();
